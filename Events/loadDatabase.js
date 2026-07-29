@@ -21,6 +21,7 @@ const dbcreate = () => {
 		const dbcreate = [
 			`CREATE TABLE IF NOT EXISTS whitelist (id TEXT PRIMARY KEY)`,
 			`CREATE TABLE IF NOT EXISTS ticketoptions (id INTEGER PRIMARY KEY AUTOINCREMENT, guild TEXT, label TEXT, roles TEXT, buyshop INTEGER DEFAULT 0)`,
+			`CREATE TABLE IF NOT EXISTS ticketsuboptions (id INTEGER PRIMARY KEY AUTOINCREMENT, guild TEXT, parentId INTEGER, label TEXT, roles TEXT)`,
 			`CREATE TABLE IF NOT EXISTS ticket (guild TEXT PRIMARY KEY, category TEXT)`,
 			`CREATE TABLE IF NOT EXISTS paypallinks (userId TEXT PRIMARY KEY, paypal TEXT)`,
 			`CREATE TABLE IF NOT EXISTS owner (id TEXT PRIMARY KEY)`,

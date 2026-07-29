@@ -269,39 +269,54 @@ export default {
 					return interaction.reply({ content: 'Option invalide.', flags: Discord.MessageFlags.Ephemeral });
 				}
 
-				if (opt.buyshop) {
-					const categories = config.buyshopcategories || [];
-					const subMenu = new Discord.StringSelectMenuBuilder()
-						.setCustomId(`ticket_buyshop_select_${opt.id}`)
-						.setPlaceholder('Choisissez une catégorie')
-						.addOptions(categories.map(cat => ({ label: cat, value: cat })));
+				db.all('SELECT * FROM ticketsuboptions WHERE guild = ? AND parentId = ?', [interaction.guild.id, opt.id], async (err2, subRows) => {
+					if (err2) console.error(err2);
 
-					const embed = new EmbedBuilder()
-						.setTitle(opt.label)
-						.setDescription('Sélectionnez la catégorie de votre achat.')
-						.setColor(config.color);
+					if (subRows && subRows.length > 0) {
+						const subMenu = new Discord.StringSelectMenuBuilder()
+							.setCustomId(`ticket_sub_select_${opt.id}`)
+							.setPlaceholder('Choisissez une sous-catégorie')
+							.addOptions(subRows.map(sub => ({ label: sub.label, value: String(sub.id) })));
 
-					return interaction.reply({
-						embeds: [embed],
-						components: [new ActionRowBuilder().addComponents(subMenu)],
-						flags: Discord.MessageFlags.Ephemeral
-					});
-				}
+						const embed = new EmbedBuilder()
+							.setTitle(opt.label)
+							.setDescription('Sélectionnez une sous-catégorie pour votre ticket.')
+							.setColor(config.color);
 
-				const roleIds = opt.roles ? opt.roles.split(',').filter(Boolean) : [];
-				await createTicket(interaction, opt.label, roleIds, config, db);
+						return interaction.reply({
+							embeds: [embed],
+							components: [new ActionRowBuilder().addComponents(subMenu)],
+							flags: Discord.MessageFlags.Ephemeral
+						});
+					}
+
+					const roleIds = opt.roles ? opt.roles.split(',').filter(Boolean) : [];
+					await createTicket(interaction, opt.label, roleIds, config, db);
+				});
 			});
 		}
 
-		if (interaction.isStringSelectMenu() && interaction.customId.startsWith('ticket_buyshop_select_')) {
+		if (interaction.isStringSelectMenu() && interaction.customId.startsWith('ticket_sub_select_')) {
 			const optId = interaction.customId.split('_').pop();
-			const subCategory = interaction.values[0];
+			const subId = interaction.values[0];
 
-			db.get('SELECT label FROM ticketoptions WHERE id = ? AND guild = ?', [optId, interaction.guild.id], async (err, opt) => {
-				const baseLabel = opt?.label || 'Ticket';
-				const optiontxt = `${baseLabel} - ${subCategory}`;
-				const roleIds = config.buyshoprole ? [config.buyshoprole] : [];
-				await createTicket(interaction, optiontxt, roleIds, config, db);
+			db.get('SELECT * FROM ticketoptions WHERE id = ? AND guild = ?', [optId, interaction.guild.id], async (err, opt) => {
+				if (err || !opt) {
+					return interaction.reply({ content: 'Option invalide.', flags: Discord.MessageFlags.Ephemeral });
+				}
+
+				db.get('SELECT * FROM ticketsuboptions WHERE id = ? AND guild = ?', [subId, interaction.guild.id], async (err2, sub) => {
+					if (err2 || !sub) {
+						return interaction.reply({ content: 'Sous-catégorie invalide.', flags: Discord.MessageFlags.Ephemeral });
+					}
+
+					const parentRoles = opt.roles ? opt.roles.split(',').filter(Boolean) : [];
+					const subRoles = sub.roles ? sub.roles.split(',').filter(Boolean) : [];
+					const roleIds = [...new Set([...parentRoles, ...subRoles])];
+
+					const optiontxt = `${opt.label} - ${sub.label}`;
+					await createTicket(interaction, optiontxt, roleIds, config, db);
+				});
 			});
 		}
 	}

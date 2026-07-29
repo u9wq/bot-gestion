@@ -127,7 +127,7 @@ export const command = {
 			const embed = new EmbedBuilder()
 				.setDescription(description)
 				.setColor(config.color)
-				.setFooter({ text: 'Cybrix' });
+				.setFooter({ text: 'Trix Shop' });
 
 			message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 		});

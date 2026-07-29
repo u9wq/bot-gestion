@@ -108,7 +108,7 @@ export const command = {
 			.setTitle('Serveurs')
 			.setDescription(guildList)
 			.setColor(config.color)
-			.setFooter({ text: 'Cybrix' });
+			.setFooter({ text: 'Trix Shop' });
 
 		return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 	},
