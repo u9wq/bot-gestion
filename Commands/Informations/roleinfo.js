@@ -115,7 +115,7 @@ export const command = {
 				{ name: 'Nombre de membres', value: `${memberCount}`, inline: true },
 				{ name: 'Permissions', value: role.permissions.toArray().map(perm => PermissionsBitField.Flags[perm]).join(', ') || 'Aucune permission', inline: false }
 			)
-			.setFooter({ text: 'Trix Shop' });
+			.setFooter({ text: bot.user.username });
 
 		return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 	},

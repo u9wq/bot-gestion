@@ -106,7 +106,7 @@ export const command = {
 			.setTitle('Liste des Boosters')
 			.setDescription(boosters.map(booster => `<@${booster.user.id}> - ${booster.user.id}`).join('\n'))
 			.setColor(config.color)
-			.setFooter({ text: 'Trix Shop' });
+			.setFooter({ text: bot.user.username });
 
 		return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 	},

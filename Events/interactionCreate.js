@@ -1,6 +1,8 @@
-import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
+import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
 import Discord from "discord.js"
 import db from "./loadDatabase.js";
+import { panel, send, reply, footerText, accentFor } from "../Utils/ui.js";
+import { confessPanel, suggestPanel, refreshPanel } from "../Utils/panels.js";
 
 async function createTicket(interaction, optiontxt, roleIds, config, db) {
 	const existing = interaction.guild.channels.cache.find(c =>
@@ -48,26 +50,24 @@ async function createTicket(interaction, optiontxt, roleIds, config, db) {
 
 		const mentionRoles = (roleIds || []).map(id => `<@&${id}>`).join(' ');
 
-		const close = new ActionRowBuilder().addComponents(
-			new ButtonBuilder()
-				.setCustomId('ticket_close')
-				.setLabel('Fermer le ticket')
-				.setStyle(ButtonStyle.Danger)
-		);
+		const close = new ButtonBuilder()
+			.setCustomId('ticket_close')
+			.setLabel('Fermer le ticket')
+			.setEmoji('🔒')
+			.setStyle(ButtonStyle.Danger);
 
-		await ticketChannel.send({
-			content: `<@${interaction.user.id}> ${mentionRoles}`,
-			embeds: [
-				new EmbedBuilder()
-					.setTitle('Ticket - ' + optiontxt)
-					.setDescription('Expliquez votre problème, un membre du staff va vous répondre.\n\nPour fermer le ticket, cliquez sur le bouton fermer le ticket')
-					.setColor(config.color)
-					.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-					.setThumbnail(interaction.user.displayAvatarURL())
-					.setFooter({ text: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-					.setTimestamp()
-			],
-			components: [close]
+		const footer = await footerText(interaction.guild, config, { updated: false });
+
+		await send(ticketChannel, panel({
+			title: `Ticket · ${optiontxt}`,
+			body: `Ouvert par <@${interaction.user.id}>${mentionRoles ? ` · ${mentionRoles}` : ''}
+
+Expliquez votre problème, un membre du staff va vous répondre.`,
+			accent: accentFor(config, 'ticket'),
+			accessory: close,
+			footer: `${footer} · ouvert <t:${Math.floor(Date.now() / 1000)}:R>`
+		}), {
+			allowedMentions: { users: [interaction.user.id], roles: roleIds || [] }
 		});
 
 		return interaction.reply({ content: `${ticketChannel}`, flags: Discord.MessageFlags.Ephemeral });
@@ -129,25 +129,19 @@ export default {
 
 				db.run('INSERT INTO confesslogs (guildId, userId, message) VALUES (?, ?, ?)', [interaction.guild.id, interaction.user.id, confession]);
 
-				const embed = new EmbedBuilder()
-					.setTitle(`Confession #${confessionNumber}`)
-					.setDescription(confession)
-					.setColor(config.color);
+				await send(confessChannel, panel({
+					title: `Confession #${confessionNumber}`,
+					body: confession,
+					accent: accentFor(config, 'confess'),
+					footer: await footerText(interaction.guild, config, { updated: false })
+				}));
 
-				const messages = await confessChannel.messages.fetch({ limit: 10 });
-				const lastBotMsg = messages.find(m => m.author.id === interaction.client.user.id && m.components.length > 0);
-				if (lastBotMsg) {
-					await lastBotMsg.edit({ components: [] }).catch(() => { });
-				}
-
-				const rowBtn = new ActionRowBuilder().addComponents(
-					new ButtonBuilder()
-						.setCustomId('confess_open')
-						.setLabel('Se confesser')
-						.setStyle(ButtonStyle.Primary)
+				await refreshPanel(
+					confessChannel,
+					interaction.client.user.id,
+					'confess_open',
+					await confessPanel(interaction.guild, config)
 				);
-
-				await confessChannel.send({ embeds: [embed], components: [rowBtn] });
 			});
 		}
 
@@ -224,28 +218,23 @@ export default {
 					return interaction.reply({ content: "Le salon de suggestion est introuvable.", flags: Discord.MessageFlags.Ephemeral });
 				}
 
-				const messages = await suggestChannel.messages.fetch({ limit: 10 });
-				const lastBotMsg = messages.find(m => m.author.id === interaction.client.user.id && m.components.length > 0);
-				if (lastBotMsg) {
-					await lastBotMsg.edit({ components: [] }).catch(() => { });
-				}
+				const sentMsg = await send(suggestChannel, panel({
+					title: 'Suggestion',
+					body: `De <@${interaction.user.id}>
+${suggestion}`,
+					accent: accentFor(config, 'suggest'),
+					footer: await footerText(interaction.guild, config, { updated: false })
+				}));
 
-				const embed = new EmbedBuilder()
-					.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-					.setTitle('Suggestion')
-					.setDescription(suggestion)
-					.setColor(config.color);
-
-				const rowBtn = new ActionRowBuilder().addComponents(
-					new ButtonBuilder()
-						.setCustomId('suggest_open')
-						.setLabel('Faire une suggestion')
-						.setStyle(ButtonStyle.Danger)
-				);
-
-				const sentMsg = await suggestChannel.send({ embeds: [embed], components: [rowBtn] });
 				await sentMsg.react('✅');
 				await sentMsg.react('❌');
+
+				await refreshPanel(
+					suggestChannel,
+					interaction.client.user.id,
+					'suggest_open',
+					await suggestPanel(interaction.guild, config)
+				);
 
 				db.run('INSERT OR REPLACE INTO suggestcooldown (userId, guildId, lastSuggest) VALUES (?, ?, ?)',
 					[interaction.user.id, interaction.guild.id, Date.now().toString()]);
@@ -275,19 +264,15 @@ export default {
 					if (subRows && subRows.length > 0) {
 						const subMenu = new Discord.StringSelectMenuBuilder()
 							.setCustomId(`ticket_sub_select_${opt.id}`)
-							.setPlaceholder('Choisissez une sous-catégorie')
+							.setPlaceholder('Sélectionne une sous-catégorie')
 							.addOptions(subRows.map(sub => ({ label: sub.label, value: String(sub.id) })));
 
-						const embed = new EmbedBuilder()
-							.setTitle(opt.label)
-							.setDescription('Sélectionnez une sous-catégorie pour votre ticket.')
-							.setColor(config.color);
-
-						return interaction.reply({
-							embeds: [embed],
-							components: [new ActionRowBuilder().addComponents(subMenu)],
-							flags: Discord.MessageFlags.Ephemeral
-						});
+						return reply(interaction, panel({
+							title: opt.label,
+							body: 'Sélectionnez une sous-catégorie pour votre ticket.',
+							accent: accentFor(config, 'ticket'),
+							components: [subMenu]
+						}), { ephemeral: true });
 					}
 
 					const roleIds = opt.roles ? opt.roles.split(',').filter(Boolean) : [];

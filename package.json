@@ -1,13 +1,10 @@
 {
-	"name": "4protect-v2",
+	"name": "bot-gestion",
 	"version": "2.0",
-	"description": "Le bot gestion de 4wip",
+	"description": "Bot de gestion Discord",
 	"main": "index.js",
-	"author": "4wip",
-	"homepage": "https://github.com/4wip/4protect-v2",
-	"repository": "github:4wip/4protect",
-	"bugs": "https://github.com/4wip/4protect-v2/issues",
 	"type": "module",
+	"private": true,
 	"dependencies": {
 		"@discordjs/rest": "^2.6.0",
 		"date-fns": "^4.1.0",
@@ -19,7 +16,6 @@
 		"ms": "^2.1.3",
 		"sqlite3": "^5.1.7"
 	},
-	"private": true,
 	"devDependencies": {
 		"@types/bun": "latest"
 	},

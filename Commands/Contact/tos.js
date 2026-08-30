@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import db from '../../Events/loadDatabase.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
 	name: 'tos',
@@ -7,6 +8,8 @@ export const command = {
 	description: 'Envoie les conditions de service dans un ticket',
 	help: 'tos',
 	run: async (bot, message, args, config) => {
+
+		if (await denyIfNoPerm(message, command.name, config)) return;
 
 		const isTicket = await new Promise(resolve => {
 			db.get('SELECT channelId FROM ticketchannel WHERE channelId = ?', [message.channel.id], (err, row) => resolve(!!row));

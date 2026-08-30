@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import db from '../../Events/loadDatabase.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
 	name: 'resetinvites',
@@ -8,13 +9,7 @@ export const command = {
 	help: 'resetinvites [@user] | resetinvites all',
 	run: async (bot, message, args, config) => {
 
-		if (!config.owners.includes(message.author.id)) {
-			const embed = new EmbedBuilder()
-				.setDescription("Vous n'avez pas la permission d'utiliser cette commande")
-				.setColor(config.color);
-			return message.reply({ embeds: [embed] })
-				.then(m => setTimeout(() => m.delete().catch(() => {}), 2000));
-		}
+		if (await denyIfNoPerm(message, command.name, config)) return;
 
 		if (args[0] === 'all') {
 			db.run('DELETE FROM giveaway_invites WHERE guildId = ?', [message.guild.id], function (err) {

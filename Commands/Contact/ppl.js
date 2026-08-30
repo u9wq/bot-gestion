@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import db from '../../Events/loadDatabase.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
 	name: 'ppl',
@@ -7,6 +8,8 @@ export const command = {
 	description: 'Envoie le lien PayPal d\'un utilisateur',
 	help: 'ppl <@user>',
 	run: async (bot, message, args, config) => {
+
+		if (await denyIfNoPerm(message, command.name, config)) return;
 
 		const user = message.mentions.users.first();
 		if (!user) {

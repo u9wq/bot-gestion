@@ -104,7 +104,7 @@ export const command = {
 			.setTitle('Liste des Administrateur/trices')
 			.setDescription(admins.map(admin => `<@${admin.user.id}> - ${admin.user.id}`).join('\n'))
 			.setColor(config.color)
-			.setFooter({ text: 'Trix Shop' });
+			.setFooter({ text: bot.user.username });
 
 		return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 	},

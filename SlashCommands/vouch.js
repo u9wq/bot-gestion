@@ -1,5 +1,6 @@
-import { EmbedBuilder, ApplicationCommandOptionType } from 'discord.js';
+import { ApplicationCommandOptionType } from 'discord.js';
 import db from '../Events/loadDatabase.js';
+import { panel, notice, send, reply, footerText, accentFor } from '../Utils/ui.js';
 
 export const command = {
 	name: 'vouch',
@@ -21,23 +22,23 @@ export const command = {
 		{
 			type: ApplicationCommandOptionType.String,
 			name: 'note',
-			description: 'Note',
+			description: 'Note sur 5',
 			required: true,
 			choices: [
-				{ name: '⭐', value: '⭐' },
-				{ name: '⭐⭐', value: '⭐⭐' },
-				{ name: '⭐⭐⭐', value: '⭐⭐⭐' },
-				{ name: '⭐⭐⭐⭐', value: '⭐⭐⭐⭐' },
-				{ name: '⭐⭐⭐⭐⭐', value: '⭐⭐⭐⭐⭐' },
+				{ name: '1 / 5', value: '1' },
+				{ name: '2 / 5', value: '2' },
+				{ name: '3 / 5', value: '3' },
+				{ name: '4 / 5', value: '4' },
+				{ name: '5 / 5', value: '5' },
 			],
 		},
 	],
 	run: async (bot, interaction, args, config) => {
-
 		const service = interaction.options.getString('service');
 		const avis = interaction.options.getString('avis');
 		const note = interaction.options.getString('note');
 		const guildId = interaction.guild.id;
+
 		const total = await new Promise((resolve, reject) => {
 			db.get('SELECT total FROM vouch WHERE guild = ?', [guildId], (err, row) => {
 				if (err) return reject(err);
@@ -56,18 +57,34 @@ export const command = {
 			});
 		});
 
-		const embed = new EmbedBuilder()
-			.setTitle(`#${total} Vouch`)
-			.setDescription(`<@${interaction.user.id}> a vouch`)
-			.addFields(
-				{ name: 'Service', value: service, inline: false },
-				{ name: 'Avis', value: avis, inline: false },
-				{ name: 'Note', value: note, inline: false },
-			)
-			.setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
-			.setTimestamp()
-			.setColor(config.color);
+		const salon = await new Promise((resolve) => {
+			db.get('SELECT channel FROM vouchchannel WHERE guild = ?', [guildId], (err, row) => {
+				resolve(err || !row ? null : row.channel);
+			});
+		});
 
-		await interaction.reply({ embeds: [embed] });
+		const quote = avis.split('\n').map(line => `> ${line}`).join('\n');
+
+		const carte = panel({
+			banner: config.vouchBanner,
+			title: `Avis #${total}`,
+			body: `Note ${note}/5 · <@${interaction.user.id}> · service \`${service}\`\n${quote}`,
+			accent: accentFor(config, 'vouch'),
+			footer: await footerText(interaction.guild, config, { updated: false })
+		});
+
+		const cible = salon ? interaction.guild.channels.cache.get(salon) : null;
+
+		if (cible) {
+			const envoye = await send(cible, carte, { allowedMentions: { parse: [] } }).catch(() => null);
+			if (envoye) {
+				return reply(interaction, notice(
+					`Merci, ton avis a été publié dans <#${cible.id}>.`,
+					accentFor(config, 'vouch')
+				), { ephemeral: true });
+			}
+		}
+
+		await reply(interaction, carte);
 	}
 };

@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import db from '../../Events/loadDatabase.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
 	name: 'pplconfig',
@@ -8,13 +9,7 @@ export const command = {
 	help: 'pplconfig <@user> <lien> | pplconfig <@user> remove',
 	run: async (bot, message, args, config) => {
 
-		if (!message.member.permissions.has('Administrator')) {
-			const embed = new EmbedBuilder()
-				.setDescription("Vous n'avez pas la permission d'utiliser cette commande")
-				.setColor(config.color);
-			return message.reply({ embeds: [embed] })
-				.then(m => setTimeout(() => m.delete().catch(() => {}), 3000));
-		}
+		if (await denyIfNoPerm(message, command.name, config)) return;
 
 		const user = message.mentions.users.first();
 		const link = args[1];

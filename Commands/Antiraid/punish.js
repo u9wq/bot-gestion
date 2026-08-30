@@ -122,7 +122,7 @@ export const command = {
 				const embed = new EmbedBuilder()
 					.setDescription(description)
 					.setColor(config.color)
-					.setFooter({ text: 'Trix Shop' });
+					.setFooter({ text: bot.user.username });
 
 				return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 			});
@@ -162,7 +162,7 @@ export const command = {
 					const embed = new EmbedBuilder()
 						.setDescription(description)
 						.setColor(config.color)
-						.setFooter({ text: 'Trix Shop' });
+						.setFooter({ text: bot.user.username });
 
 					message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
 				});

@@ -16,11 +16,7 @@ const bot = new Discord.Client({
 		Discord.Partials.Reaction,
 		Discord.Partials.ThreadMember,
 		Discord.Partials.GuildScheduledEvent
-	],
-	presence: {
-		activities: [{ name: '/trixshop', url: 'https://twitch.tv/discord' }],
-		status: 'dnd'
-	}
+	]
 });
 
 bot.commands = new Discord.Collection();
@@ -31,7 +27,6 @@ bot.login(process.env.TOKEN)
 	.then(() => {
 		console.log(`[INFO] > ${bot.user.tag} est connecté`);
 		console.log(`[Invite] https://discord.com/oauth2/authorize?client_id=${bot.user.id}&permissions=8&integration_type=0&scope=bot`);
-		console.log(`[Support] https://dsc.gg/Trix Shop`);
 	})
 	.catch((e) => {
 		console.log('\x1b[31m[!] — Please configure a valid bot token or allow all the intents\x1b[0m');

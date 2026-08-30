@@ -1,14 +1,13 @@
 import db from '../../Events/loadDatabase.js';
 import { PermissionFlagsBits } from 'discord.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
     name: 'deletestats',
     helpname: 'deletestats',
     description: 'Supprimer les salons de statistiques',
     run: async (bot, message, args, config) => {
-        if (!config.owners.includes(message.author.id) && !message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-            return message.reply("Vous n'avez pas la permission.");
-        }
+        if (await denyIfNoPerm(message, command.name, config)) return;
 
         db.get('SELECT * FROM stats WHERE guildId = ?', [message.guild.id], async (err, row) => {
             if (!row) return message.reply('❌ Aucun salon stats configuré.');

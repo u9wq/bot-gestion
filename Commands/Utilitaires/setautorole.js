@@ -1,14 +1,13 @@
 import db from '../../Events/loadDatabase.js';
 import { PermissionFlagsBits } from 'discord.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
     name: 'setautorole',
     helpname: 'setautorole <@role/off>',
     description: 'Configurer le rôle automatique aux nouveaux membres',
     run: async (bot, message, args, config) => {
-        if (!config.owners.includes(message.author.id) && !message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-            return message.reply("Vous n'avez pas la permission.");
-        }
+        if (await denyIfNoPerm(message, command.name, config)) return;
 
         const arg = message.content.trim().split(/ +/g);
 

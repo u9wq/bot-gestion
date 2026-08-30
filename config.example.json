@@ -1,0 +1,23 @@
+{
+	"prefix": "+",
+	"color": "#ED4245",
+	"owners": ["123456789012345678"],
+	"guildId": "123456789012345678",
+
+	"ticketColor": "",
+	"vouchColor": "",
+	"confessColor": "",
+	"suggestColor": "",
+
+	"titre": "Tickets",
+	"description": "Sélectionne une catégorie ci-dessous pour ouvrir un ticket.",
+	"tfooter": "",
+	"ticketBanner": "",
+	"vouchBanner": "",
+
+	"ctitre": "Vérification",
+	"cdescription": "Clique sur le bouton pour accéder au serveur.",
+	"ccolor": "#ED4245",
+	"cimage": "",
+	"cemoji": ""
+}

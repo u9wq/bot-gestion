@@ -1,14 +1,13 @@
 import db from '../../Events/loadDatabase.js';
 import { ChannelType, PermissionFlagsBits } from 'discord.js';
+import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
     name: 'setupstats',
     helpname: 'setupstats',
     description: 'Créer les salons de statistiques',
     run: async (bot, message, args, config) => {
-        if (!config.owners.includes(message.author.id) && !message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-            return message.reply("Vous n'avez pas la permission.");
-        }
+        if (await denyIfNoPerm(message, command.name, config)) return;
 
         const guild = message.guild;
         const s = await message.reply('🔄 Création des salons stats...');
