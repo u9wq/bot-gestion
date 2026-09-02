@@ -33,18 +33,6 @@ export default {
 			}
 		});
 
-		db.get('SELECT antitoken FROM antiraid WHERE guild = ?', [member.guild.id], async (err, row) => {
-			if (err || !row?.antitoken) return;
-			const accountAgeMs = Date.now() - member.user.createdTimestamp;
-			const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-			if (accountAgeMs < sevenDaysMs) {
-				try {
-					await member.kick('Compte trop récent - AntiToken');
-				} catch (error) {
-					console.error(`Impossible de kick ${member.user.tag} AntiToken:`, error);
-				}
-			}
-		});
 
 		db.get('SELECT id, texte FROM soutien WHERE guild = ?', [member.guild.id], async (err, row) => {
 			if (err || !row) return;

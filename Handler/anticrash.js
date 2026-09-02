@@ -1,22 +1,31 @@
+/**
+ * Empêche le processus de s'arrêter sur une erreur non capturée.
+ * Les erreurs sont journalisées plutôt qu'ignorées silencieusement.
+ */
 const anticrashHandler = (bot) => {
-	bot.on('error', (err) => { console.log('Une erreur non-capturée est survenue:', err); });
+	bot.on('error', (error) => console.error('[CLIENT] erreur :', error));
 
-	process.on('uncaughtExceptionMonitor', (err, origin) => { console.log(err, origin); });
+	process.on('uncaughtException', (error, origine) =>
+		console.error('[PROCESS] exception non capturée :', origine, error));
 
-	process.on('rejectionHandled', (err) => { console.log(err); });
+	process.on('unhandledRejection', (raison) =>
+		console.error('[PROCESS] promesse rejetée sans catch :', raison));
 
-	process.on('warning', (warning) => { console.log(warning); });
+	process.on('warning', (avertissement) => {
+		// Node imprime déjà les avertissements de dépréciation : on ne double pas.
+		// Celui de discord-giveaways vient de sa propre écoute de l'événement 'ready'.
+		if (avertissement.name === 'DeprecationWarning') return;
+		console.warn('[PROCESS] avertissement :', avertissement.message);
+	});
 
-	process.on('uncaughtException', (error) => { console.log('Une erreur non-capturée est survenue:', error); });
+	const arreter = async (signal) => {
+		console.log(`[PROCESS] arrêt demandé (${signal}), déconnexion du bot`);
+		await bot.destroy().catch(() => { });
+		process.exit(0);
+	};
 
-	process.on('unhandledRejection', (reason) => { console.log(reason); });
-
-	process.on('processTicksAndRejections', (request, reason) => { console.log('Une erreur réseau non-capturée est survenue:', reason); });
-
-	process.on('exit', (code) => { console.log(`Processus terminé avec le code ${code}`); });
-
-	process.on('SIGINT', () => { bot.destroy(); process.exit(0); });
-	process.on('SIGTERM', () => { bot.destroy(); process.exit(0); });
+	process.on('SIGINT', () => arreter('SIGINT'));
+	process.on('SIGTERM', () => arreter('SIGTERM'));
 };
 
 export default anticrashHandler;

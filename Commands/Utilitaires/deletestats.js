@@ -1,9 +1,9 @@
 import db from '../../Events/loadDatabase.js';
-import { PermissionFlagsBits } from 'discord.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
     name: 'deletestats',
+	help: 'deletestats',
     helpname: 'deletestats',
     description: 'Supprimer les salons de statistiques',
     run: async (bot, message, args, config) => {

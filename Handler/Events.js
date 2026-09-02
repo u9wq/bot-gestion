@@ -1,34 +1,39 @@
-import config from "../config.json" with { type: 'json' }
-import fs from "fs"
+import config from '../config.json' with { type: 'json' };
+import { listeFichiers, importer } from './loader.js';
 
 export default async (bot) => {
-	const eventFiles = fs.readdirSync('./Events/').filter((file) => file.endsWith('.js'));
+	let charges = 0;
+	let echecs = 0;
 
-	for (const file of eventFiles) {
-		const event = (await import(`../Events/${file}`)).default;
+	for (const fichier of listeFichiers('./Events')) {
+		try {
+			const module = await importer(fichier);
+			const event = module.default;
 
-		if (event.once) {
-			bot.once(event.name, (...args) => event.execute(...args, bot, config));
-		} else {
-			bot.on(event.name, (...args) => event.execute(...args, bot, config));
+			// loadDatabase.js et sendlog.js sont des modules utilitaires, pas des événements
+			if (!event?.name || typeof event.execute !== 'function') continue;
+
+			const relais = (...args) => {
+				try {
+					const resultat = event.execute(...args, bot, config);
+					if (resultat instanceof Promise) {
+						resultat.catch((error) =>
+							console.error(`[EVENT] erreur dans ${event.name} :`, error));
+					}
+				} catch (error) {
+					console.error(`[EVENT] erreur dans ${event.name} :`, error);
+				}
+			};
+
+			if (event.once) bot.once(event.name, relais);
+			else bot.on(event.name, relais);
+
+			charges++;
+		} catch (error) {
+			echecs++;
+			console.error(`[EVENT] échec du chargement de ${fichier} :`, error.message);
 		}
-		console.log(`[EVENT] > ${file}`);
 	}
 
-	const eventSubFolders = fs.readdirSync('./Events/').filter((folder) => !folder.endsWith('.js'));
-
-	for (const folder of eventSubFolders) {
-		const subEventFiles = fs.readdirSync(`./Events/${folder}/`).filter((file) => file.endsWith('.js'));
-
-		for (const file of subEventFiles) {
-			const event = (await import(`../Events/${folder}/${file}`)).default;
-
-			if (event.once) {
-				bot.once(event.name, (...args) => event.execute(...args, bot, config));
-			} else {
-				bot.on(event.name, (...args) => event.execute(...args, bot, config));
-			}
-			console.log(`[EVENT] > ${file} - ${folder}`);
-		}
-	}
+	console.log(`[EVENT] ${charges} événements chargés${echecs ? `, ${echecs} en échec` : ''}`);
 };

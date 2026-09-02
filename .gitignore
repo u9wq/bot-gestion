@@ -1,11 +1,24 @@
+# Dépendances
 node_modules/
+
+# Secrets et configuration locale
 .env
+.env.local
+.env.*.local
+config.json
+!.env.example
+!config.example.json
+
+# Base de données et état runtime
 *.sqlite
 *.sqlite-journal
 database.sqlite3
-config.json
 giveaways.json
-package-lock.json
 
-# Ignore all .DS_Store into macOS
+# Journaux
+*.log
+logs/
+
+# Système
 *.DS_Store
+Thumbs.db

@@ -1,4 +1,5 @@
 import config from "../config.json" with { type: 'json' }
+import { auditCommand } from "../Utils/audit.js";
 import { EmbedBuilder } from "discord.js";
 import db from "./loadDatabase.js";
 const spamMap = new Map();
@@ -203,6 +204,7 @@ const handleCommands = async (message, bot, config) => {
 		const commandFile = bot.commands.get(commandName);
 		if (!commandFile) return prefixPing();
 
+		auditCommand(message, commandFile.name, args, config).catch(() => { });
 		await commandFile.run(bot, message, args, config);
 	} else if (message.content.startsWith(config.prefix)) {
 		const args = message.content.slice(config.prefix.length).trim().split(/ +/);
@@ -211,6 +213,7 @@ const handleCommands = async (message, bot, config) => {
 		const commandFile = bot.commands.get(commandName);
 		if (!commandFile) return;
 
+		auditCommand(message, commandFile.name, args, config).catch(() => { });
 		await commandFile.run(bot, message, args, config);
 	}
 };

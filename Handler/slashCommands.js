@@ -1,27 +1,28 @@
-import fs from "fs"
+import { listeFichiers, importer } from './loader.js';
 
-export default async bot => {
+export default async (bot) => {
 	const arrayOfSlashCommands = [];
-	const commandFiles = fs.readdirSync('./SlashCommands/').filter((file) => file.endsWith('.js'));
+	let echecs = 0;
 
-	for (const file of commandFiles) {
-		const props = (await import(`../SlashCommands/${file}`)).command;
-		bot.slashCommands.set(props.name, props);
-		arrayOfSlashCommands.push(props);
-		bot.arrayOfSlashCommands = arrayOfSlashCommands
-		console.log(`[SLASH-COMMAND] > ${file}`);
-	}
-	const commandSubFolders = fs.readdirSync('./SlashCommands/').filter((folder) => !folder.endsWith('.js'));
+	for (const fichier of listeFichiers('./SlashCommands')) {
+		try {
+			const { command } = await importer(fichier);
 
-	for (const folder of commandSubFolders) {
-		const subCommandFiles = fs.readdirSync(`./SlashCommands/${folder}/`).filter((file) => file.endsWith('.js'));
+			if (!command?.name || typeof command.run !== 'function') {
+				console.warn(`[SLASH-COMMAND] ignoré (name ou run manquant) : ${fichier}`);
+				echecs++;
+				continue;
+			}
 
-		for (const file of subCommandFiles) {
-			const props = (await import(`../SlashCommands/${folder}/${file}`)).command;
-			bot.slashCommands.set(props.name, props);
-			arrayOfSlashCommands.push(props);
-			bot.arrayOfSlashCommands = arrayOfSlashCommands
-			console.log(`[SLASH-COMMAND] > ${file} - ${folder}`);
+			bot.slashCommands.set(command.name, command);
+			arrayOfSlashCommands.push(command);
+		} catch (error) {
+			echecs++;
+			console.error(`[SLASH-COMMAND] échec du chargement de ${fichier} :`, error.message);
 		}
 	}
+
+	bot.arrayOfSlashCommands = arrayOfSlashCommands;
+
+	console.log(`[SLASH-COMMAND] ${arrayOfSlashCommands.length} commandes chargées${echecs ? `, ${echecs} en échec` : ''}`);
 };

@@ -1,35 +1,31 @@
-import fs from "fs"
+import { listeFichiers, importer } from './loader.js';
 
 export default async (bot) => {
-	const commandFiles = fs.readdirSync('./Commands/').filter((file) => file.endsWith('.js'));
+	let charges = 0;
+	let echecs = 0;
 
-	for (const file of commandFiles) {
-		const props = (await import(`../Commands/${file}`))?.command;
-		bot.commands.set(props.command.name, props);
+	for (const fichier of listeFichiers('./Commands')) {
+		try {
+			const { command } = await importer(fichier);
 
-		if (props.aliases && Array.isArray(props.aliases)) {
-			props.aliases.forEach((alias) => {
-				bot.commands.set(alias, props);
-			});
-		}
-		console.log(`[COMMAND] > ${file}`);
-	}
-
-	const commandSubFolders = fs.readdirSync('./Commands/').filter((folder) => !folder.endsWith('.js'));
-
-	for (const folder of commandSubFolders) {
-		const subCommandFiles = fs.readdirSync(`./Commands/${folder}/`).filter((file) => file.endsWith('.js'));
-
-		for (const file of subCommandFiles) {
-			const props = (await import(`../Commands/${folder}/${file}`))?.command;
-			bot.commands.set(props.name, props);
-
-			if (props.aliases && Array.isArray(props.aliases)) {
-				props.aliases.forEach((alias) => {
-					bot.commands.set(alias, props);
-				});
+			if (!command?.name || typeof command.run !== 'function') {
+				console.warn(`[COMMAND] ignoré (name ou run manquant) : ${fichier}`);
+				echecs++;
+				continue;
 			}
-			console.log(`[COMMAND] > ${file} - ${folder}`);
+
+			bot.commands.set(command.name, command);
+
+			for (const alias of command.aliases ?? []) {
+				if (alias !== command.name) bot.commands.set(alias, command);
+			}
+
+			charges++;
+		} catch (error) {
+			echecs++;
+			console.error(`[COMMAND] échec du chargement de ${fichier} :`, error.message);
 		}
 	}
+
+	console.log(`[COMMAND] ${charges} commandes chargées${echecs ? `, ${echecs} en échec` : ''}`);
 };

@@ -4,6 +4,7 @@ import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
     name: 'setupstats',
+	help: 'setupstats',
     helpname: 'setupstats',
     description: 'Créer les salons de statistiques',
     run: async (bot, message, args, config) => {
@@ -17,6 +18,7 @@ export const command = {
 
             const category = await guild.channels.create({
                 name: '📊 → Statistique',
+	help: 'setupstats',
                 type: ChannelType.GuildCategory,
             });
 
@@ -28,6 +30,7 @@ export const command = {
 
             const memberCh = await guild.channels.create({
                 name: `👥・Membre : ${guild.memberCount}`,
+	help: 'setupstats',
                 type: ChannelType.GuildVoice,
                 parent: category.id,
                 permissionOverwrites: perms,
@@ -38,6 +41,7 @@ export const command = {
             ).size;
             const onlineCh = await guild.channels.create({
                 name: `🌐・En ligne : ${onlineCount}`,
+	help: 'setupstats',
                 type: ChannelType.GuildVoice,
                 parent: category.id,
                 permissionOverwrites: perms,
@@ -48,6 +52,7 @@ export const command = {
                 .reduce((a, c) => a + (c.members?.filter(m => !m.user.bot).size || 0), 0);
             const vocalCh = await guild.channels.create({
                 name: `🔉・En vocal : ${vocalCount}`,
+	help: 'setupstats',
                 type: ChannelType.GuildVoice,
                 parent: category.id,
                 permissionOverwrites: perms,

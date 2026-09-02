@@ -1,9 +1,9 @@
 import db from '../../Events/loadDatabase.js';
-import { PermissionFlagsBits } from 'discord.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
     name: 'setautorole',
+	help: 'setautorole <@role/off>',
     helpname: 'setautorole <@role/off>',
     description: 'Configurer le rôle automatique aux nouveaux membres',
     run: async (bot, message, args, config) => {
