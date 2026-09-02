@@ -1,9 +1,10 @@
 import * as Discord from "discord.js";
 import db from "../../Events/loadDatabase.js";
 import { EmbedBuilder } from "discord.js";
-import config from "../../config.json" with { type: 'json' }
+import config from '../../Utils/config.js';
 import sendLog from "../../Events/sendlog.js";
 import { denyIfNoPerm } from '../../Utils/perms.js';
+import { prevenirMembre } from '../../Utils/sanction.js';
 
 export const command = {
 	name: 'derank',
@@ -28,6 +29,7 @@ export const command = {
 		}
 
 		try {
+			await prevenirMembre(user, message.guild, 'derank', reason, config);
 			await user.roles.set([]);
 			message.reply(`<@${user.id}> a été derank.`);
 			const embed = new Discord.EmbedBuilder()

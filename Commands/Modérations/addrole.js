@@ -1,6 +1,6 @@
 import * as Discord from "discord.js";
 import { EmbedBuilder } from "discord.js";
-import config from "../../config.json" with { type: 'json' }
+import config from '../../Utils/config.js';
 import sendLog from "../../Events/sendlog.js";
 import { denyIfNoPerm } from '../../Utils/perms.js';
 

@@ -1,4 +1,4 @@
-import config from '../../config.json' with { type: 'json' };
+import config from '../../Utils/config.js';
 import SnakeGame from '../../Games/SnakeGame.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 

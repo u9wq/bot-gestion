@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import db from '../../Events/loadDatabase.js';
-import config from '../../config.json' with { type: 'json' };
+import config from '../../Utils/config.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
@@ -30,7 +30,8 @@ export const command = {
 				Antiwebhook: row?.antiwebhook ? '✅' : '❌',
 				Antiban: row?.antiban ? '✅' : '❌',
 				Antieveryone: row?.antieveryone ? '✅' : '❌',
-				Antibot: row?.antibot ? '✅' : '❌'
+				Antibot: row?.antibot ? '✅' : '❌',
+				Antitoken: row?.antitoken ? `✅ (${row.antitokenjours || 7}j)` : '❌'
 			};
 
 			const description = Object.entries(protections)

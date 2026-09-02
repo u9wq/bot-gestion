@@ -1,6 +1,6 @@
 import { AuditLogEvent, EmbedBuilder } from 'discord.js';
 import { updateStats } from './updateStats.js';
-import config from "../config.json" with { type: 'json' }
+import config from '../Utils/config.js';
 import sendLog from "./sendlog.js";
 
 export default {

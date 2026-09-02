@@ -1,9 +1,10 @@
 import * as Discord from "discord.js";
 import { EmbedBuilder } from "discord.js";
-import config from "../../config.json" with { type: 'json' }
+import config from '../../Utils/config.js';
 import sendLog from "../../Events/sendlog.js";
 import ms from "ms";
 import { denyIfNoPerm } from '../../Utils/perms.js';
+import { prevenirMembre } from '../../Utils/sanction.js';
 
 export const command = {
 	name: 'mute',
@@ -45,6 +46,7 @@ export const command = {
 		}
 
 		try {
+			await prevenirMembre(member, message.guild, 'mute', 'Mute temporaire', config, duration || '40m');
 			await member.timeout(ms);
 			message.reply(`<@${member.id}> a été mute pour ${duration ? duration : "40m"}.`);
 			const embed = new Discord.EmbedBuilder()

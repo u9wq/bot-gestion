@@ -1,4 +1,4 @@
-import config from "../config.json" with { type: 'json' }
+import config from '../Utils/config.js';
 import { auditCommand } from "../Utils/audit.js";
 import { EmbedBuilder } from "discord.js";
 import db from "./loadDatabase.js";

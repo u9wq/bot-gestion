@@ -1,6 +1,6 @@
 import { ChannelType, PermissionsBitField, EmbedBuilder } from 'discord.js';
 import sendLog from "./sendlog.js";
-import config from "../config.json" with { type: 'json' }
+import config from '../Utils/config.js';
 import db from './loadDatabase.js';
 
 export default {

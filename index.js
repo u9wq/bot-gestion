@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import Discord from 'discord.js';
-import config from './config.json' with { type: 'json' };
+import config from './Utils/config.js';
 
 import commandHandler from './Handler/Commands.js';
 import slashCommandHandler from './Handler/slashCommands.js';

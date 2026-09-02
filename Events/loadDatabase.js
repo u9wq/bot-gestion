@@ -76,6 +76,19 @@ const dbcreate = () => {
 		dbcreate.forEach(query => {
 			db.run(query);
 		});
+
+		// Colonnes ajoutees apres coup : CREATE TABLE IF NOT EXISTS ne les pose pas
+		// sur une table deja creee. L'erreur "duplicate column" est normale ensuite.
+		const migrations = [
+			'ALTER TABLE antiraid ADD COLUMN antitoken INTEGER DEFAULT 0',
+			'ALTER TABLE antiraid ADD COLUMN antitokenjours INTEGER DEFAULT 7'
+		];
+
+		migrations.forEach(query => db.run(query, (err) => {
+			if (err && !err.message.includes('duplicate column')) {
+				console.error('Migration echouee :', query, err.message);
+			}
+		}));
 	});
 };
 

@@ -33,7 +33,7 @@ guilde dont l'identifiant ne correspond pas à `guildId` dans la configuration.
 
 | Dépendance | Version |
 | --- | --- |
-| Node.js | 20.10 ou plus récent (les attributs d'import `with { type: 'json' }` en dépendent) |
+| Node.js | 18 ou plus récent |
 | npm | fourni avec Node.js |
 | Outils de compilation | requis par `sqlite3` (build-essential sous Linux, Visual Studio Build Tools sous Windows) |
 
@@ -49,12 +49,15 @@ cd bot-gestion
 npm install
 ```
 
-Copiez ensuite les deux fichiers d'exemple :
+Copiez ensuite le fichier d'exemple et renseignez-le :
 
 ```bash
 cp .env.example .env
-cp config.example.json config.json
 ```
+
+`config.json` n'est pas à créer à la main : il est généré au premier démarrage à
+partir des variables ci-dessous. `config.example.json` sert uniquement de référence
+pour connaître toutes les clés disponibles.
 
 ## Configuration
 
@@ -63,9 +66,21 @@ cp config.example.json config.json
 | Variable | Obligatoire | Rôle |
 | --- | --- | --- |
 | `TOKEN` | oui | Token du bot, depuis le portail développeur Discord |
+| `GUILD_ID` | oui | Identifiant du serveur autorisé. Sans lui le bot quitterait votre serveur au démarrage |
+| `OWNERS` | oui | Identifiants des propriétaires, séparés par des virgules |
+| `PREFIX` | non | Préfixe des commandes, `+` par défaut |
+| `COLOR` | non | Couleur des panneaux, `#ED4245` par défaut |
 
-C'est la seule valeur qui vit dans un fichier : c'est un secret, et le bot doit
-redémarrer pour s'y reconnecter. Tout le reste se règle depuis Discord.
+Sur un panneau d'hébergement type Pterodactyl, ces variables se renseignent dans
+l'interface : aucun fichier à écrire à la main.
+
+`GUILD_ID`, `OWNERS`, `PREFIX` et `COLOR` ne servent qu'au **premier démarrage**,
+où elles créent `config.json`. Ensuite ce fichier fait foi, et tout se règle depuis
+Discord avec `+config`, `+prefix`, `+setcolor` et `+setfooter`. Seul `TOKEN` reste
+lu à chaque lancement.
+
+Si une valeur obligatoire manque, le bot s'arrête au démarrage avec un message
+expliquant précisément quoi renseigner et où.
 
 ### Configuration du serveur — `config.json`
 

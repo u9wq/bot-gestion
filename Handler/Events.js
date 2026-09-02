@@ -1,4 +1,4 @@
-import config from '../config.json' with { type: 'json' };
+import config from '../Utils/config.js';
 import { listeFichiers, importer } from './loader.js';
 
 export default async (bot) => {

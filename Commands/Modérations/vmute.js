@@ -1,10 +1,11 @@
 import * as Discord from "discord.js";
 import db from "../../Events/loadDatabase.js";
 import { EmbedBuilder } from "discord.js";
-import config from "../../config.json" with { type: 'json' }
+import config from '../../Utils/config.js';
 import sendLog from "../../Events/sendlog.js";
 import ms from "ms";
 import { denyIfNoPerm } from '../../Utils/perms.js';
+import { prevenirMembre } from '../../Utils/sanction.js';
 
 export const command = {
 	name: 'vmute',
@@ -37,6 +38,7 @@ export const command = {
 		}
 
 		try {
+			await prevenirMembre(user, message.guild, 'vmute', reason, config, duration);
 			await user.voice.setMute(true, reason);
 			message.reply(`<@${user.id}> a été mute vocal  ${ms(ms(duration), { long: true })} pour ${reason}`);
 			const embed = new Discord.EmbedBuilder()

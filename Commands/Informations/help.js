@@ -1,5 +1,5 @@
 import { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
-import config from '../../config.json' with { type: 'json' };
+import config from '../../Utils/config.js';
 import { checkPerm } from '../../Utils/perms.js';
 import path from "node:path";
 import fs from "fs";

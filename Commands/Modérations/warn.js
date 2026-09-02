@@ -1,9 +1,10 @@
 import * as Discord from "discord.js";
 import db from "../../Events/loadDatabase.js";
 import { EmbedBuilder } from "discord.js";
-import config from "../../config.json" with { type: 'json' }
+import config from '../../Utils/config.js';
 import sendLog from "../../Events/sendlog.js";
 import { denyIfNoPerm } from '../../Utils/perms.js';
+import { prevenirMembre } from '../../Utils/sanction.js';
 
 export const command = {
 	name: 'warn',
@@ -28,6 +29,8 @@ export const command = {
 		if (!reason) {
 			return message.reply("Veuillez fournir une raison.");
 		}
+
+		await prevenirMembre(user, message.guild, 'warn', reason, config);
 
 		db.run(`INSERT INTO sanctions (userId, raison, date, guild) VALUES (?, ?, ?, ?)`, [user.id, reason, new Date().toISOString(), message.guild.id], function (err) {
 			if (err) {

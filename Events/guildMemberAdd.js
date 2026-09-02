@@ -1,12 +1,14 @@
 import { ActivityType } from 'discord.js';
 import { updateStats } from './updateStats.js';
 import db from './loadDatabase.js';
+import { EmbedBuilder } from 'discord.js';
+import sendLog from './sendlog.js';
 
 export const inviteCache = new Map();
 
 export default {
 	name: 'guildMemberAdd',
-	async execute(member) {
+	async execute(member, bot, config) {
 
 		db.get('SELECT channels FROM ghostping WHERE guild = ?', [member.guild.id], async (err, row) => {
 			if (err || !row) return;
@@ -33,6 +35,27 @@ export default {
 			}
 		});
 
+
+		db.get('SELECT antitoken, antitokenjours FROM antiraid WHERE guild = ?', [member.guild.id], async (err, row) => {
+			if (err || !row?.antitoken) return;
+
+			const jours = row.antitokenjours || 7;
+			const ageMs = Date.now() - member.user.createdTimestamp;
+			if (ageMs >= jours * 24 * 60 * 60 * 1000) return;
+
+			try {
+				await member.kick(`Compte de moins de ${jours} jours - Antitoken`);
+
+				const embed = new EmbedBuilder()
+					.setDescription(`<@${member.id}> (${member.id}) a été expulsé : compte créé <t:${Math.floor(member.user.createdTimestamp / 1000)}:R>, minimum requis ${jours} jour(s).`)
+					.setColor(config?.color || 0xED4245)
+					.setTimestamp();
+
+				sendLog(member.guild, embed, 'raidlog');
+			} catch (error) {
+				console.error(`[ANTITOKEN] expulsion impossible pour ${member.user.tag} :`, error.message);
+			}
+		});
 
 		db.get('SELECT id, texte FROM soutien WHERE guild = ?', [member.guild.id], async (err, row) => {
 			if (err || !row) return;

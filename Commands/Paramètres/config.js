@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { sauvegarder } from '../../Utils/config.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 import { panel, notice, send, footerText } from '../../Utils/ui.js';
 
@@ -8,6 +8,8 @@ const SETTINGS = {
 	couleurvouch: { key: 'vouchColor', label: 'Couleur des avis', type: 'color' },
 	couleurconfess: { key: 'confessColor', label: 'Couleur des confessions', type: 'color' },
 	couleursuggest: { key: 'suggestColor', label: 'Couleur des suggestions', type: 'color' },
+	couleursanction: { key: 'sanctionColor', label: 'Couleur des messages de sanction', type: 'color' },
+	mpsanction: { key: 'dmOnSanction', label: 'Prévenir le membre sanctionné en MP', type: 'bool' },
 	titre: { key: 'titre', label: 'Titre du panneau ticket' },
 	description: { key: 'description', label: 'Description du panneau ticket' },
 	banniere: { key: 'ticketBanner', label: 'Bannière du panneau ticket', type: 'url' },
@@ -19,16 +21,11 @@ const SETTINGS = {
 	cemoji: { key: 'cemoji', label: 'Emoji du bouton captcha' }
 };
 
-function saveConfig(config) {
-	return new Promise((resolve, reject) => {
-		fs.writeFile('./config.json', JSON.stringify(config, null, 2), (err) => {
-			if (err) return reject(err);
-			resolve();
-		});
-	});
-}
+const VRAI = ['on', 'true', 'oui', 'yes', '1'];
+const FAUX = ['off', 'false', 'non', 'no', '0'];
 
-function display(value) {
+function display(value, setting) {
+	if (setting?.type === 'bool') return value ? '`activé`' : '`désactivé`';
 	if (value === undefined || value === null || String(value).trim() === '') return '_vide_';
 	return `\`${value}\``;
 }
@@ -50,7 +47,7 @@ export const command = {
 				const value = config[setting.key];
 				const shown = setting.type === 'color' && (value === undefined || String(value).trim() === '')
 					? `_suit ${display(config.color)}_`
-					: display(value);
+					: display(value, setting);
 				return `**${name}** · ${setting.label}\n-# ${shown}`;
 			});
 
@@ -89,6 +86,30 @@ export const command = {
 			));
 		}
 
+		if (setting.type === 'bool') {
+			const brut = value.toLowerCase();
+			if (![...VRAI, ...FAUX].includes(brut)) {
+				return send(message.channel, notice(
+					`**${name}** attend \`on\` ou \`off\`.`,
+					config.color
+				));
+			}
+
+			config[setting.key] = VRAI.includes(brut);
+
+			try {
+				await sauvegarder();
+			} catch (err) {
+				console.error('Erreur lors de la sauvegarde de la configuration :', err);
+				return send(message.channel, notice('Une erreur est survenue lors de la sauvegarde.', config.color));
+			}
+
+			return send(message.channel, notice(
+				`**${name}** est maintenant ${display(config[setting.key], setting)}`,
+				config.color
+			));
+		}
+
 		if (value !== '') {
 			if (setting.type === 'color' && !/^#([0-9a-fA-F]{6})$/.test(value)) {
 				return send(message.channel, notice('La couleur doit être au format `#RRGGBB`.', config.color));
@@ -101,7 +122,7 @@ export const command = {
 		config[setting.key] = value;
 
 		try {
-			await saveConfig(config);
+			await sauvegarder();
 		} catch (err) {
 			console.error('Erreur lors de la sauvegarde de la configuration :', err);
 			return send(message.channel, notice('Une erreur est survenue lors de la sauvegarde.', config.color));

@@ -1,7 +1,7 @@
 import db from "../../Events/loadDatabase.js";
 import fs from "fs"
 import path from "path";
-import config from "../../config.json" with { type: 'json' };
+import config, { RACINE } from '../../Utils/config.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
@@ -36,9 +36,10 @@ export const command = {
 		}
 
 		const commandExists = async (commandName) => {
-			const commandFolders = fs.readdirSync('./Commands').filter((file) => fs.statSync(path.join('./Commands', file)).isDirectory());
+			const dossierCommandes = path.join(RACINE, 'Commands');
+			const commandFolders = fs.readdirSync(dossierCommandes).filter((file) => fs.statSync(path.join(dossierCommandes, file)).isDirectory());
 			for (const folder of commandFolders) {
-				const commandFiles = fs.readdirSync(`./Commands/${folder}`).filter(file => file.endsWith('.js'));
+				const commandFiles = fs.readdirSync(path.join(dossierCommandes, folder)).filter(file => file.endsWith('.js'));
 				for (const file of commandFiles) {
 					const cmd = (await import(`../../Commands/${folder}/${file}`)).command;
 					if (cmd.help && cmd.help.name.toLowerCase() === commandName) {

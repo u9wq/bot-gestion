@@ -5,7 +5,7 @@ import {
 	ButtonStyle,
 	ComponentType
 } from 'discord.js';
-import config from "../config.json" with { type: 'json' }
+import config from '../Utils/config.js';
 
 const WIDTH = 10;
 const HEIGHT = 8;

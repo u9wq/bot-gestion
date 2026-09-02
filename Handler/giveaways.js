@@ -1,12 +1,14 @@
 import { EmbedBuilder } from 'discord.js';
+import path from 'node:path';
 import { GiveawaysManager } from 'discord-giveaways';
+import { RACINE } from '../Utils/config.js';
 
 /**
  * Branche le gestionnaire de giveaways et le récapitulatif de fin de tirage.
  */
 export default function giveawayHandler(bot, config) {
 	bot.giveawaysManager = new GiveawaysManager(bot, {
-		storage: './giveaways.json',
+		storage: path.join(RACINE, 'giveaways.json'),
 		updateCountdownEvery: 5000,
 		default: {
 			botsCanWin: false,

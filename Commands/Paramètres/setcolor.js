@@ -1,10 +1,9 @@
-import fs from "fs"
-import config from "../../config.json" with { type: 'json' };
+import config, { sauvegarder } from '../../Utils/config.js';
 import { denyIfNoPerm } from '../../Utils/perms.js';
 
 export const command = {
 	name: 'setcolor',
-	helpname: 'setcolor',
+	helpname: 'setcolor <#hex>',
 	description: "Permet de changer la couleur des embed",
 	aliases: ['color'],
 	help: 'setcolor <#hex>',
@@ -17,13 +16,14 @@ export const command = {
 		}
 
 		config.color = color;
-		fs.writeFile('./config.json', JSON.stringify(config, null, 2), (err) => {
-			if (err) {
-				console.error('Erreur lors de la mise à jour de la couleur :', err);
-				return message.reply("Une erreur est survenue.");
-			}
 
-			message.reply(`La couleur est maintenant: ${color}`);
-		});
+		try {
+			await sauvegarder();
+		} catch (error) {
+			console.error('Erreur lors de la mise à jour de la couleur :', error);
+			return message.reply("Une erreur est survenue.");
+		}
+
+		return message.reply(`La couleur est maintenant: ${color}`);
 	},
 }

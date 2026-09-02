@@ -8,6 +8,9 @@
 	"vouchColor": "",
 	"confessColor": "",
 	"suggestColor": "",
+	"sanctionColor": "",
+
+	"dmOnSanction": true,
 
 	"titre": "Tickets",
 	"description": "Sélectionne une catégorie ci-dessous pour ouvrir un ticket.",
