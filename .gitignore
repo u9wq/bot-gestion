@@ -17,7 +17,7 @@ giveaways.json
 
 # Journaux
 *.log
-logs/
+/logs/
 
 # Système
 *.DS_Store
