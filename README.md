@@ -107,6 +107,61 @@ npm start
 La base SQLite `database.sqlite3` est créée automatiquement au premier démarrage,
 avec l'ensemble de ses tables.
 
+## Déploiement sur un panneau d'hébergement
+
+Ces instructions valent pour Pterodactyl et les panneaux qui en dérivent.
+
+### L'egg et la version de Node
+
+Utilisez un egg **Node.js générique**. Réglez la version sur **18 minimum**, 20 ou
+22 de préférence, et indiquez `index.js` comme fichier principal. La commande de
+démarrage peut être `node index.js` ou `npm start` : les chemins du bot sont
+résolus depuis l'emplacement du code, jamais depuis le dossier de lancement.
+
+### Envoyer les fichiers
+
+Par SFTP ou par le gestionnaire de fichiers du panneau. **N'envoyez pas
+`node_modules`** — le panneau lance `npm install` au démarrage et reconstruira les
+dépendances pour son propre système.
+
+### La configuration — deux méthodes
+
+**Par les variables du panneau.** Renseignez `TOKEN`, `GUILD_ID` et `OWNERS` dans
+l'onglet Démarrage. Au premier lancement, le bot crée `config.json` à partir de ces
+valeurs.
+
+**Par un fichier `.env`.** Envoyez un fichier `.env` à la racine, sur le modèle de
+`.env.example`. Cette méthode fonctionne toujours.
+
+> Pterodactyl n'affiche que les variables **déclarées dans l'egg**. Si le vôtre ne
+> prévoit pas `GUILD_ID` ni `OWNERS`, vous ne pourrez pas les ajouter depuis
+> l'interface : passez par `.env`, ou modifiez l'egg pour y déclarer ces variables.
+
+### Ce que le bot écrit sur le disque
+
+| Fichier | Contenu | À conserver lors d'une mise à jour |
+| --- | --- | --- |
+| `config.json` | Réglages du serveur | oui |
+| `database.sqlite3` | Sanctions, tickets, permissions, logs | oui, impérativement |
+| `giveaways.json` | Tirages en cours | oui |
+
+Lors d'une mise à jour, remplacez uniquement les fichiers de code. Écraser
+`database.sqlite3` efface l'historique des sanctions et toute la configuration des
+permissions.
+
+### Problèmes courants
+
+| Symptôme | Cause probable | Solution |
+| --- | --- | --- |
+| Le bot s'arrête avec un message en rouge | Une valeur obligatoire manque | Le message indique laquelle et où la renseigner |
+| `Used disallowed intents` | Intents privilégiés désactivés | Activez Presence, Server Members et Message Content dans le portail développeur |
+| Le bot démarre mais aucune commande ne répond | Message Content désactivé, ou aucun owner défini | Vérifiez l'intent, puis `OWNERS` |
+| Le bot quitte le serveur juste après l'invitation | `GUILD_ID` ne correspond pas | Le bot est mono-serveur et quitte tous les autres |
+| `npm install` échoue sur `sqlite3` | Image Alpine (musl) ou ARM, sans binaire précompilé | Utilisez une image Debian x64, la plus courante sur les panneaux |
+
+Sur une image Debian x64 standard, `sqlite3` télécharge un binaire déjà compilé et
+ne nécessite aucun outil de compilation.
+
 ## Architecture
 
 `index.js` est **le point d'entrée**. C'est le seul fichier à exécuter. Il
